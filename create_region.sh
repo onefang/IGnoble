@@ -4,7 +4,6 @@ NAME=$1
 LOCATION=$2
 URL=$3
 IP=$4
-
 cd /opt/opensim/config
 
 k=0
@@ -20,21 +19,27 @@ done
 if [ "x$NAME" = "x" ]
 then
     NAME="No name sim $RANDOM"	# Should be unique per grid.
+    echo "WARNING setting the sim name to [$NAME], this may not be what you want."
 fi
 
 if [ "x$LOCATION" = "x" ]
 then
     LOCATION="$RANDOM,$RANDOM"	# again UNIQUE (i.e. ONLY ONE) per grid in THIS case!
+    echo "WARNING setting the Location to $LOCATION, this may not be what you want."
 fi
 
 if [ "x$URL" = "x" ]
 then
     URL=$(hostname)		# URL is best (without the HTTP://), but IP (e.g. 88.109.81.55) works too.
+    echo "WARNING setting the ExternalHostName to $URL, this may not be what you want."
 fi
 
 if [ "x$IP" = "x" ]
 then
-    IP="0.0.0.0"		# 0.0.0.0 will work for a single sim per physical machine, otherwise we need the real internal IP.
+				# 0.0.0.0 will work for a single sim per physical machine, otherwise we need the real internal IP.
+    IP=$(wget -q http://automation.whatismyip.com/n09230945.asp -O -)
+    echo "WARNING setting the InternalAddress to $IP, this may not be what you want."
+    echo "  0.0.0.0 will work for a single sim per physical machine, otherwise we need the real internal IP."
 fi
 
 NUM=$(printf "%02d" $(($k + 1)) )
@@ -49,22 +54,15 @@ cat > Regions/sim.ini << zzzzEOFzzzz
 [$NAME]
 RegionUUID = $UUID
 Location = $LOCATION
-InternalAddress = 0.0.0.0
+InternalAddress = $IP
 InternalPort = $(( $PORT + 1 ))
 AllowAlternatePorts = False
 ExternalHostName = $URL
 zzzzEOFzzzz
 
 ln -s ../../setup/start-sim-in-rest start-sim-in-rest
-#ln -s ../../current current
 cp ../../current/bin/OpenSim.exe.config OpenSim.exe.config
 sed -i "s@<file value=\"OpenSim.log\" />@<file value=\"/var/log/opensim/sim$NUM.log\" />@" OpenSim.exe.config
-
-#cp current/bin/OpenSim.ini OpenSim.ini
-#sed -i "s@regionload_regionsdir=\"/opt/opensim/config\"@regionload_regionsdir=\"/opt/opensim/config/sim$NUM/Regions\"@" OpenSim.ini
-#sed -i "s@; PIDFile = \"/var/run/opensim/opensim.pid\"@PIDFile = \"/var/run/opensim/sim$NUM.pid\"@" OpenSim.ini
-#sed -i "s@;http_listener_port = 9000@http_listener_port = $(( $PORT + 0))@" OpenSim.ini
-#sed -i "s@; console_port = 0@console_port = $(( $PORT + 2 ))@" OpenSim.ini
 
 cat > ThisSim.ini << zzzzEOFzzzz
 [Startup]
@@ -81,4 +79,5 @@ sed -i "s@; port = 9002@port = $(( $PORT + 2 ))@" OpenSim.ConsoleClient.ini
 
 cp ../../setup/opensim-monit.conf opensim-monit.conf
 sed -i "s@sim01@sim$NUM@g" opensim-monit.conf
+sudo chown -R opensim:opensim ..
 
