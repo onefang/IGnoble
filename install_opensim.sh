@@ -26,8 +26,10 @@ FLUSH PRIVILEGES;
 zzzzEOFzzz
 
 echo "Setting up OpenSim"
-sudo deluser opensim
+sudo deluser opensim --remove-home
 sudo adduser --system --shell /bin/false --group opensim
+sudo cp opensim.screenrc /home/opensim/.screenrc
+sudo chmod 744 /home/opensim/.screenrc
 sudo mkdir -p /var/log/opensim
 sudo chown opensim:opensim /var/log/opensim
 sudo chmod 777 /var/log/opensim
@@ -38,7 +40,10 @@ sudo mkdir -p /opt/opensim
 sudo chown $USER:$USER /opt/opensim
 
 cd /opt/opensim
-wget https://github.com/downloads/infinitegrid/InfiniteGrid-Opensim/opensim-0.7.1.1-infinitegrid-03.tar.bz2
+if [ ! -e opensim-0.7.1.1-infinitegrid-03.tar.bz2 ]
+then
+    wget https://github.com/downloads/infinitegrid/InfiniteGrid-Opensim/opensim-0.7.1.1-infinitegrid-03.tar.bz2
+fi
 tar xjf opensim-0.7.1.1-infinitegrid-03.tar.bz2
 ln -s opensim-0.7.1.1-infinitegrid-03 current
 mkdir -p config
@@ -56,7 +61,6 @@ mv NSLModules.Messaging.MuteList.dll ../../modules/
 ln -s ../../modules/NSLModules.Messaging.MuteList.dll NSLModules.Messaging.MuteList.dll
 mv OpenSimProfile.Modules.dll ../../modules/
 ln -s ../../modules/OpenSimProfile.Modules.dll OpenSimProfile.Modules.dll
-#sudo chown -R opensim:opensim ../../modules
 ln -s ../../config config
 
 cat > OpenSim.ConsoleClient.ini << zzzzEOFzzzz
@@ -86,5 +90,17 @@ sed -i 's@; StorageProvider = "OpenSim.Data.MySQL.dll"@StorageProvider = "OpenSi
 sed -i "s@; ConnectionString = \"Data Source=localhost;Database=opensim;User ID=opensim;Password=\*\*\*\*;\"@ConnectionString = \"Data Source=localhost;Database=opensim;User ID=opensim;Password=$MYSQL_PASSWORD;\"@" GridCommon.ini
 
 cd ../../..
+
+# Setting screen to be suid.  EWWWWWW!!!  Security hole!!
+#ImReallyParanoid="true"
+if [ "x$ImReallyParanoid" = "x" ]
+then
+    sudo chmod u+s /usr/bin/screen
+    sudo chmod g+s /usr/bin/screen
+    sudo chmod 755 /var/run/screen
+    sudo chown root:utmp /var/run/screen
+fi
+
 #sudo chown -R opensim:opensim opensim-0.7.1.1-infinitegrid-03
+#sudo chown -R opensim:opensim modules
 

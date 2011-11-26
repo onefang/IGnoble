@@ -1,40 +1,87 @@
 #!/bin/bash
 
-osversion="current"
-NeedARest=" -console=rest"
+# Pick one of these depending on how you want your access.
+# NOTE - REST does not work.  B-(
+#NeedARest=" -console=rest"
 NeedARest=""
+Screaming="true"
+#Screaming=""
+
+USER=$(whoami)
+
+console_name=screen_console
+if [ "$USER" = "opensim" ]
+then
+    screen_session=opensim/${console_name}
+    screen_check="screen -ls opensim/"
+else
+    screen_session=${console_name}
+    screen_check="screen -ls"
+fi
+osversion="current"
    
-if [ x$1 = x ]; then
+if [ "x$1" = "x" ]; then
     pathname=$(pwd)
     tgt=$(basename $pathname)
-elif [ -d ./$1 ]; then
+elif [ -d "./$1" ]; then
     tgt=$1
-elif [ -d ./sim$1 ]; then
+elif [ -d "./sim$1" ]; then
     tgt=sim$1
 fi
-   
-if [ x$tgt = x ]; then
+
+if [ "x$tgt" = "x" ]; then
     echo "usage:"
     echo "    $ start-sim-in-rest <sim>"
     echo "where <sim> is one of: " robust sim[0-9][0-9]
     exit 1
 fi
 
-inidir=/opt/opensim/config/${tgt}
-bindir=/opt/opensim/${osversion}/bin
-if [ x$tgt = xrobust ]; then
+if [ "x$Screaming" = "xtrue" ]
+then
+   if ($screen_check | grep -q ${console_name}); then
+       echo "INFO: Screen already running"
+       true
+   else
+       echo "DEBUG: Starting screen"
+       screen -d -m -S ${console_name}
+   fi
+fi
+
+if [ "x$tgt" = "xrobust" ]; then
     exe="Robust"
 else
     exe="OpenSim"
 fi
+inidir=/opt/opensim/config/${tgt}
+bindir=/opt/opensim/${osversion}/bin
+cmd="/usr/bin/mono ${exe}.exe -inidirectory=${inidir} -logconfig=${inidir}/${exe}.exe.config $NeedARest"
 
+# Check if it's already running.
 if [ ! -e /var/run/opensim/${tgt} ]
 then
-    cd ${bindir}
-    /usr/bin/mono ${exe}.exe -inidirectory=${inidir} -logconfig=${inidir}/${exe}.exe.config $NeedARest
+    if [ "x$Screaming" = "xtrue" ]
+    then
+	tmpfile=`mktemp`
+	echo "chdir ${bindir}"          > ${tmpfile}
+	echo "screen -t ${tgt} ${cmd}" >> ${tmpfile}
+	chmod a+r ${tmpfile}
+	rm -f ${inidir}/start.screen
+	cp ${tmpfile} ${inidir}/start.screen
+	rm ${tmpfile}
+	# echo "INFO: start process and connect to screen (opensim)"
+	screen -r ${screen_session} -p "-" -X source ${inidir}/start.screen
+    else
+	cd ${bindir}
+	$cmd
+    fi
 fi
 
-if [ "x$NeedARest" = x }
+# Either way, need to start up the console after.
+if [ "x$Screaming" = "xtrue" ]
+then
+    echo "Starting screen client."
+	screen -r ${screen_session} -A
+elif [ "x$NeedARest" != "x" ]
 then
     echo "Starting rest client."
     cd ${inidir}
