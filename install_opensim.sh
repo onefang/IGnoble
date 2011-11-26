@@ -106,7 +106,8 @@ then
 fi
 
 sudo chown -R opensim:opensim /opt/opensim
-sudo chmod -R a-x *
-sudo chmod -R a+X *
+sudo chmod -R a-x /opt/opensim
+sudo chmod -R a+X /opt/opensim
+sudo chmod -R g+w /opt/opensim
 sudo chmod a+x /opt/opensim/setup/start-sim-in-rest
 

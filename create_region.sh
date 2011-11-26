@@ -80,4 +80,5 @@ sed -i "s@; port = 9002@port = $(( $PORT + 2 ))@" OpenSim.ConsoleClient.ini
 cp ../../setup/opensim-monit.conf opensim-monit.conf
 sed -i "s@sim01@sim$NUM@g" opensim-monit.conf
 sudo chown -R opensim:opensim ..
+sudo chmod -R g+w ..
 
