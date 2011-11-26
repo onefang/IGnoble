@@ -47,7 +47,7 @@ Or this if you plan on running more than one sim -
 
 ./create_sim.sh "My new sim" "1234,5678" "sims.example.net" "1.2.3.4"
 
-No you can go to /opt/opensim/config/sim01 and run the following script
+Now you can go to /opt/opensim/config/sim01 and run the following script
 to start it up -
 
 ./start-sim-in-rest
