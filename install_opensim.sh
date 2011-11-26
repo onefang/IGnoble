@@ -7,17 +7,14 @@ else
     MYSQL_PASSWORD=$1
 fi
 USER=$(whoami)
+VERSION_CONTROL="off"
 
 sudo apt-get install mysql-server screen mono-complete monit mc
 sudo /etc/init.d/mysql restart
 
 echo "Setting up mySQL"
 mysql -u root -p -h localhost << zzzzEOFzzz
-drop database opensim;
-create database opensim;
-drop user opensim;
-drop user 'opensim'@'localhost';
-FLUSH PRIVILEGES;
+create database if not exists opensim;
 create user opensim identified by '$MYSQL_PASSWORD';
 create user 'opensim'@'localhost' identified by '$MYSQL_PASSWORD';
 grant all on opensim.* to opensim;
@@ -26,42 +23,46 @@ FLUSH PRIVILEGES;
 zzzzEOFzzz
 
 echo "Setting up OpenSim"
-sudo deluser opensim --remove-home
 sudo adduser --system --shell /bin/false --group opensim
+sudo addgroup $USER opensim
 sudo cp opensim.screenrc /home/opensim/.screenrc
-sudo chmod 744 /home/opensim/.screenrc
+sudo chmod 644 /home/opensim/.screenrc
 sudo mkdir -p /var/log/opensim
 sudo chown opensim:opensim /var/log/opensim
-sudo chmod 777 /var/log/opensim
+sudo chmod 757 /var/log/opensim
 sudo mkdir -p /var/run/opensim
 sudo chown opensim:opensim /var/run/opensim
-sudo chmod 777 /var/run/opensim
-sudo mkdir -p /opt/opensim
-sudo chown $USER:$USER /opt/opensim
+sudo chmod 757 /var/run/opensim
+sudo mkdir -p /opt/opensim/config /opt/opensim/modules /opt/opensim/setup
+sudo chown opensim:opensim /opt/opensim
+sudo chown -R opensim:opensim /opt/opensim
+sudo chmod -R 757 /opt/opensim
+cp start-sim-in-rest /opt/opensim/setup
+cp opensim-monit.conf /opt/opensim/setup
+cat opensim-crontab.txt | sudo crontab -u opensim -
 
 cd /opt/opensim
 if [ ! -e opensim-0.7.1.1-infinitegrid-03.tar.bz2 ]
 then
     wget https://github.com/downloads/infinitegrid/InfiniteGrid-Opensim/opensim-0.7.1.1-infinitegrid-03.tar.bz2
 fi
-tar xjf opensim-0.7.1.1-infinitegrid-03.tar.bz2
-ln -s opensim-0.7.1.1-infinitegrid-03 current
-mkdir -p config
-mkdir -p modules
-mkdir -p setup
-cp setup/opensim-crontab.txt config
-cat setup/opensim-crontab.txt | sudo crontab -u opensim -
+
+if [ ! -e opensim-0.7.1.1-infinitegrid-03 ]
+then
+    tar xjf opensim-0.7.1.1-infinitegrid-03.tar.bz2
+fi
+ln -fs opensim-0.7.1.1-infinitegrid-03 current
 
 cd current/bin
-mv OpenSim.Forge.Currency.dll ../../modules/
-ln -s ../../modules/OpenSim.Forge.Currency.dll OpenSim.Forge.Currency.dll
-mv OpenSimSearch.Modules.dll ../../modules/
-ln -s ../../modules/OpenSimSearch.Modules.dll OpenSimSearch.Modules.dll
-mv NSLModules.Messaging.MuteList.dll ../../modules/
-ln -s ../../modules/NSLModules.Messaging.MuteList.dll NSLModules.Messaging.MuteList.dll
-mv OpenSimProfile.Modules.dll ../../modules/
-ln -s ../../modules/OpenSimProfile.Modules.dll OpenSimProfile.Modules.dll
-ln -s ../../config config
+mv -f OpenSim.Forge.Currency.dll ../../modules/
+ln -fs ../../modules/OpenSim.Forge.Currency.dll OpenSim.Forge.Currency.dll
+mv -f OpenSimSearch.Modules.dll ../../modules/
+ln -fs ../../modules/OpenSimSearch.Modules.dll OpenSimSearch.Modules.dll
+mv -f NSLModules.Messaging.MuteList.dll ../../modules/
+ln -fs ../../modules/NSLModules.Messaging.MuteList.dll NSLModules.Messaging.MuteList.dll
+mv -f OpenSimProfile.Modules.dll ../../modules/
+ln -fs ../../modules/OpenSimProfile.Modules.dll OpenSimProfile.Modules.dll
+ln -fs ../../config config
 
 cat > OpenSim.ConsoleClient.ini << zzzzEOFzzzz
 [Startup]
@@ -101,6 +102,8 @@ then
     sudo chown root:utmp /var/run/screen
 fi
 
-#sudo chown -R opensim:opensim opensim-0.7.1.1-infinitegrid-03
-#sudo chown -R opensim:opensim modules
+sudo chown -R opensim:opensim /opt/opensim
+sudo chmod -R a-x *
+sudo chmod -R a+X *
+sudo chmod a+x /opt/opensim/setup/start-sim-in-rest
 
