@@ -67,7 +67,7 @@ cmd="/usr/bin/mono ${exe}.exe -inidirectory=${inidir} -logconfig=${inidir}/${exe
 title=$(head -n 1 ${inidir}/Regions/sim.ini )
 
 # Check if it's already running.
-if [ ! -e /var/run/opensim/${tgt} ]
+if [ ! -e /var/run/opensim/${tgt}.pid ]
 then
     if [ "x$Screaming" = "xtrue" ]
     then
