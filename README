@@ -1,0 +1,62 @@
+Use this to create a sim that links into Infinite Grid from Linux.
+
+I'ts been tested on Umuntu 10.04, YMMV.
+
+Follow these steps.
+
+Go to -
+
+http://wiki.infinitegrid.org/index.php/Howto_Link_your_Opensim_region_to_Infinite_Grid
+
+and follow the directions to create an admin user account.  You can skip
+that bit if you already have a suitable user with sudo access.
+
+Note that these scripts pretty much follow that above wiki description,
+with some exceptions.  REST is used for console access, instead of
+screen.  The configuration information per sim has been rearranged so
+that there is only ONE copy of the OpenSim installation.
+
+Next you need to figure out what password you want to use for OpenSims
+access to the database.  We will call this "DatabasePassword".  Run the
+following script -
+
+./install_opensim.sh DatabasePassword
+
+This will do most of the work fo you, except for creating sims.  A
+separate script is here for sim creation, you can use it to create many
+sims.  You will need -
+
+Your host name, or it could be your IP, we will use "sims.example.net".
+
+A name for your sim, we will use "My new sim".  It should be unique on
+the grid.
+
+A location for your sim, we will use "1234,5678".  You can use the
+Infinite Grid web based map to poke around and find a good location. 
+Choose an empty spot.
+
+Optionally, you might need your IP address if you are creating more than
+one sim, we will use "1.2.3.4".
+
+Once you have all that information sorted out, run this script if ONLY
+hosting a single sim on this computer -
+
+./create_sim.sh "My new sim" "1234,5678" "sims.example.net"
+
+Or this if you plan on running more than one sim -
+
+./create_sim.sh "My new sim" "1234,5678" "sims.example.net" "1.2.3.4"
+
+No you can go to /opt/opensim/config/sim01 and run the following script
+to start it up -
+
+./start-sim-in-rest
+
+You will see the REST console.  You can run the REST console again by
+running that command once more.
+
+Once it's all tested, you can use this to finish things off (back in
+this directory) -
+
+./go_live.sh
+

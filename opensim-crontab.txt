@@ -1,0 +1,11 @@
+# to see current crontab for opensim
+#  $ sudo crontab -u opensim -l
+#
+# to install this crontab for opensim:
+#  $ cat /opt/opensim/config/opensim-crontab.txt | sudo crontab -u opensim -
+#
+# at midnight, remove old logs, files created 3 or more days ago
+#0 0 * * *       find /var/log/opensim -ctime +1 -delete
+# experimental version using savelog -c cycles all opensim log files over 7 days
+0 0 * * *       /usr/bin/savelog -c 7 /var/log/opensim/*.log
+

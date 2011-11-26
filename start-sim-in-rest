@@ -1,0 +1,43 @@
+#!/bin/bash
+
+osversion="current"
+NeedARest=" -console=rest"
+NeedARest=""
+   
+if [ x$1 = x ]; then
+    pathname=$(pwd)
+    tgt=$(basename $pathname)
+elif [ -d ./$1 ]; then
+    tgt=$1
+elif [ -d ./sim$1 ]; then
+    tgt=sim$1
+fi
+   
+if [ x$tgt = x ]; then
+    echo "usage:"
+    echo "    $ start-sim-in-rest <sim>"
+    echo "where <sim> is one of: " robust sim[0-9][0-9]
+    exit 1
+fi
+
+inidir=/opt/opensim/config/${tgt}
+bindir=/opt/opensim/${osversion}/bin
+if [ x$tgt = xrobust ]; then
+    exe="Robust"
+else
+    exe="OpenSim"
+fi
+
+if [ ! -e /var/run/opensim/${tgt} ]
+then
+    cd ${bindir}
+    /usr/bin/mono ${exe}.exe -inidirectory=${inidir} -logconfig=${inidir}/${exe}.exe.config $NeedARest
+fi
+
+if [ "x$NeedARest" = x }
+then
+    echo "Starting rest client."
+    cd ${inidir}
+    /usr/bin/mono ${bindir}/OpenSim.ConsoleClient.exe -logconfig=${inidir}/${exe}.exe.config
+fi
+
