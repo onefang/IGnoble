@@ -26,6 +26,9 @@ echo "Setting up OpenSim"
 sudo adduser --system --shell /bin/false --group opensim
 sudo addgroup $USER opensim
 sudo cp opensim.screenrc /home/opensim/.screenrc
+sudo chown $USER /home/opensim/.screenrc
+echo -e "acladd root,$USER\n" >> /home/opensim/.screenrc
+sudo chown opensim:opensim /home/opensim/.screenrc
 sudo chmod 644 /home/opensim/.screenrc
 sudo mkdir -p /var/log/opensim
 sudo chown opensim:opensim /var/log/opensim

@@ -8,17 +8,18 @@ Screaming="true"
 #Screaming=""
 
 USER=$(whoami)
-
-console_name=screen_console
-if [ "$USER" = "opensim" ]
-then
-    screen_session=opensim/${console_name}
-    screen_check="screen -ls opensim/"
-else
-    screen_session=${console_name}
-    screen_check="screen -ls"
-fi
+console_name="OpenSim_console"
+screen_session=opensim/${console_name}
+screen_check="screen -ls opensim/"
 osversion="current"
+bindir=/opt/opensim/${osversion}/bin
+quiet=""
+
+if [ "$1" = "-q" ]
+then
+    quiet="true"
+    shift 1
+fi
    
 if [ "x$1" = "x" ]; then
     pathname=$(pwd)
@@ -36,14 +37,22 @@ if [ "x$tgt" = "x" ]; then
     exit 1
 fi
 
+if [ $USER = "opensim" ]
+then
+    SUDO=""
+else
+    SUDO="sudo -Hu opensim"
+fi
+
+cd ${bindir}
 if [ "x$Screaming" = "xtrue" ]
 then
-   if ($screen_check | grep -q ${console_name}); then
-       echo "INFO: Screen already running"
-       true
-   else
-       echo "DEBUG: Starting screen"
-       screen -d -m -S ${console_name}
+    if ($screen_check | grep -q ${console_name}); then
+	echo "INFO: Screen already running"
+	true
+    else
+	echo "DEBUG: Starting screen"
+	$SUDO screen -d -m -S ${console_name}
    fi
 fi
 
@@ -52,39 +61,35 @@ if [ "x$tgt" = "xrobust" ]; then
 else
     exe="OpenSim"
 fi
+
 inidir=/opt/opensim/config/${tgt}
-bindir=/opt/opensim/${osversion}/bin
 cmd="/usr/bin/mono ${exe}.exe -inidirectory=${inidir} -logconfig=${inidir}/${exe}.exe.config $NeedARest"
+title=$(head -n 1 ${inidir}/Regions/sim.ini )
 
 # Check if it's already running.
 if [ ! -e /var/run/opensim/${tgt} ]
 then
     if [ "x$Screaming" = "xtrue" ]
     then
-	tmpfile=`mktemp`
-	echo "chdir ${bindir}"          > ${tmpfile}
-	echo "screen -t ${tgt} ${cmd}" >> ${tmpfile}
-	chmod a+r ${tmpfile}
-	rm -f ${inidir}/start.screen
-	cp ${tmpfile} ${inidir}/start.screen
-	rm ${tmpfile}
-	# echo "INFO: start process and connect to screen (opensim)"
-	screen -r ${screen_session} -p "-" -X source ${inidir}/start.screen
+	echo "INFO: start process and connect to screen (opensim) $title"
+	$SUDO screen -r ${screen_session} -p "-" -X screen -t "${title}" ${cmd}
     else
-	cd ${bindir}
 	$cmd
     fi
 fi
 
-# Either way, need to start up the console after.
-if [ "x$Screaming" = "xtrue" ]
+if [ "x$quiet" = "x" ]
 then
-    echo "Starting screen client."
+    # Either way, need to start up the console after.
+    if [ "x$Screaming" = "xtrue" ]
+    then
+	echo "Starting screen client."
 	screen -r ${screen_session} -A
-elif [ "x$NeedARest" != "x" ]
-then
-    echo "Starting rest client."
-    cd ${inidir}
-    /usr/bin/mono ${bindir}/OpenSim.ConsoleClient.exe -logconfig=${inidir}/${exe}.exe.config
+    elif [ "x$NeedARest" != "x" ]
+    then
+	echo "Starting rest client."
+	cd ${inidir}
+	/usr/bin/mono ${bindir}/OpenSim.ConsoleClient.exe -logconfig=${inidir}/${exe}.exe.config
+    fi
 fi
 

@@ -16,5 +16,4 @@ hardstatus string '%{= kw}[ %{= kb}%H%{= kw} ][%= %{= kw}%?%-Lw%?%{= kW}%n*%f %t
 bind 'q' quit
 
 multiuser on
-acladd root
 
