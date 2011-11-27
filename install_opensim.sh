@@ -40,7 +40,7 @@ sudo chmod 757 /var/log/opensim
 sudo mkdir -p /var/run/opensim
 sudo chown opensim:opensim /var/run/opensim
 sudo chmod 757 /var/run/opensim
-sudo mkdir -p $OSPATH/config $OSPATH/setup $OSPATH/caches/assetcache
+sudo mkdir -p $OSPATH/backups $OSPATH/caches/assetcache $OSPATH/config $OSPATH/setup 
 sudo chown opensim:opensim $OSPATH
 sudo chown -R opensim:opensim $OSPATH
 sudo chmod -R 757 $OSPATH
