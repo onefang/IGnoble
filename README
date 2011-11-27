@@ -60,3 +60,14 @@ this directory) -
 
 ./go_live.sh
 
+
+NOTES -
+
+This attempts to use only one copy of the OS install for all sims.  We
+are running one instance of OS for each sim though, as this prevents one
+sim crashing from bringing down the others.  OS however really wants to
+write data to directories within it's own bin directory.  I'm not at all
+certian if that data can be shared.  For the same reason, so far I've
+not been able to get to thepoint where we can make the OS directory read
+only.  This complicates things during upgrades.
+

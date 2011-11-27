@@ -6,6 +6,10 @@ then
 else
     MYSQL_PASSWORD=$1
 fi
+REST_USER="RestingUser"
+REST_PASSWORD="SecretRestingPlace"
+
+OSPATH="/opt/opensim"
 USER=$(whoami)
 VERSION_CONTROL="off"
 
@@ -36,41 +40,33 @@ sudo chmod 757 /var/log/opensim
 sudo mkdir -p /var/run/opensim
 sudo chown opensim:opensim /var/run/opensim
 sudo chmod 757 /var/run/opensim
-sudo mkdir -p /opt/opensim/config /opt/opensim/modules /opt/opensim/setup
-sudo chown opensim:opensim /opt/opensim
-sudo chown -R opensim:opensim /opt/opensim
-sudo chmod -R 757 /opt/opensim
-cp start-sim-in-rest /opt/opensim/setup
-cp opensim-monit.conf /opt/opensim/setup
+sudo mkdir -p $OSPATH/config $OSPATH/setup $OSPATH/caches/assetcache
+sudo chown opensim:opensim $OSPATH
+sudo chown -R opensim:opensim $OSPATH
+sudo chmod -R 757 $OSPATH
+cp * $OSPATH/setup
+cp common.ini $OSPATH/config
+sed -i "s@MYSQL_PASSWORD@$MYSQL_PASSWORD@g" $OSPATH/config/common.ini
+sed -i "s@REST_PASSWORD@$REST_PASSWORD@g" $OSPATH/config/common.ini
+sed -i "s@REST_USER@$REST_USER@g" $OSPATH/config/common.ini
 cat opensim-crontab.txt | sudo crontab -u opensim -
 
-cd /opt/opensim
+cd $OSPATH
 if [ ! -e opensim-0.7.1.1-infinitegrid-03.tar.bz2 ]
 then
     wget https://github.com/downloads/infinitegrid/InfiniteGrid-Opensim/opensim-0.7.1.1-infinitegrid-03.tar.bz2
 fi
-
 if [ ! -e opensim-0.7.1.1-infinitegrid-03 ]
 then
     tar xjf opensim-0.7.1.1-infinitegrid-03.tar.bz2
 fi
 ln -fs opensim-0.7.1.1-infinitegrid-03 current
 
-cd current/bin
-mv -f OpenSim.Forge.Currency.dll ../../modules/
-ln -fs ../../modules/OpenSim.Forge.Currency.dll OpenSim.Forge.Currency.dll
-mv -f OpenSimSearch.Modules.dll ../../modules/
-ln -fs ../../modules/OpenSimSearch.Modules.dll OpenSimSearch.Modules.dll
-mv -f NSLModules.Messaging.MuteList.dll ../../modules/
-ln -fs ../../modules/NSLModules.Messaging.MuteList.dll NSLModules.Messaging.MuteList.dll
-mv -f OpenSimProfile.Modules.dll ../../modules/
-ln -fs ../../modules/OpenSimProfile.Modules.dll OpenSimProfile.Modules.dll
-ln -fs ../../config config
-
-cat > OpenSim.ConsoleClient.ini << zzzzEOFzzzz
+# Create the REST client config file.
+cat > config/OpenSim.ConsoleClient.ini << zzzzEOFzzzz
 [Startup]
     ; Set here or use the -user command-line switch
-    user = RestingUser
+    user = $REST_USER
 
     ; Set here or use the -host command-line switch
     host = localhost
@@ -81,18 +77,37 @@ cat > OpenSim.ConsoleClient.ini << zzzzEOFzzzz
     ; Set here or use the -pass command-line switch
     ; Please be aware that this is not secure since the password is in the clear
     ; we recommend the use of -pass wherever possible
-    pass = SecretRestingPLace
+    pass = $REST_PASSWORD
 zzzzEOFzzzz
 
-sed -i 's@<appender name="LogFileAppender" type="log4net.Appender.FileAppender">@<appender name="LogFileAppender" type="log4net.Appender.RollingFileAppender">@' OpenSim.exe.config
-sed -i 's@; ConsoleUser = "Test"@ConsoleUser = "RestingUser"@' OpenSim.ini
-sed -i 's@; ConsolePass = "secret"@ConsolePass = "SecretRestingPlace"@' OpenSim.ini
+cd current/bin
+# Not sure why we are moving these.  Hopefully we can get rid of having to move them.
+# Comenting them out, until Alice or Rizzy remember why they seed to be moved.  See if things still work.
+#mv -f OpenSim.Forge.Currency.dll ../../modules/
+#ln -fs ../../modules/OpenSim.Forge.Currency.dll OpenSim.Forge.Currency.dll
+#mv -f OpenSimSearch.Modules.dll ../../modules/
+#ln -fs ../../modules/OpenSimSearch.Modules.dll OpenSimSearch.Modules.dll
+#mv -f NSLModules.Messaging.MuteList.dll ../../modules/
+#ln -fs ../../modules/NSLModules.Messaging.MuteList.dll NSLModules.Messaging.MuteList.dll
+#mv -f OpenSimProfile.Modules.dll ../../modules/
+#ln -fs ../../modules/OpenSimProfile.Modules.dll OpenSimProfile.Modules.dll
+
+ln -fs ../../config config
+mv -f addon-modules ../../config
+ln -fs ../../config/addon-modules addon-modules
+
+# Try to make the OS distro directory suited to being read only.
+ln -fs ../../caches caches
+mv -f ScriptEngines ../../caches
+ln -fs ../../caches/ScriptEngines ScriptEngines
+# Grumble, OS has it's own silly ideas, and recreates this.
+# "Cannot create /opt/opensim/opensim-0.7.1.1-infinitegrid-03/bin/addin-db-001 because a file with the same name already exists."
+#ln -fs ../../caches/addin-db-001 addin-db-001
 
 cd config-include/
+# Damn, can't overide these, we could change them for the next IG OS release.
 sed -i 's@Include-Storage = "config-include/storage/SQLiteStandalone.ini";@; Include-Storage = "config-include/storage/SQLiteStandalone.ini";@' GridCommon.ini
-sed -i 's@; StorageProvider = "OpenSim.Data.MySQL.dll"@StorageProvider = "OpenSim.Data.MySQL.dll"@' GridCommon.ini
-sed -i "s@; ConnectionString = \"Data Source=localhost;Database=opensim;User ID=opensim;Password=\*\*\*\*;\"@ConnectionString = \"Data Source=localhost;Database=opensim;User ID=opensim;Password=$MYSQL_PASSWORD;\"@" GridCommon.ini
-
+sed -i 's@CacheDirectory = ./assetcache@CacheDirectory = caches/assetcache@' FlotsamCache.ini
 cd ../../..
 
 # Setting screen to be suid.  EWWWWWW!!!  Security hole!!
@@ -105,9 +120,9 @@ then
     sudo chown root:utmp /var/run/screen
 fi
 
-sudo chown -R opensim:opensim /opt/opensim
-sudo chmod -R a-x /opt/opensim
-sudo chmod -R a+X /opt/opensim
-sudo chmod -R g+w /opt/opensim
-sudo chmod a+x /opt/opensim/setup/start-sim-in-rest
+sudo chown -R opensim:opensim $OSPATH
+sudo chmod -R a-x $OSPATH
+sudo chmod -R a+X $OSPATH
+sudo chmod -R g+w $OSPATH
+sudo chmod a+x $OSPATH/setup/start-sim
 

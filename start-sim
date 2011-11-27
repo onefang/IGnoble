@@ -44,7 +44,11 @@ else
     SUDO="sudo -Hu opensim"
 fi
 
+# Would be nice if this worked.
+export MONO_PATH=${bindir}
+# Then we would not have to do this, and subsequently write all over the damn bin directory.
 cd ${bindir}
+
 if [ "x$Screaming" = "xtrue" ]
 then
     if ($screen_check | grep -q ${console_name}); then
@@ -63,7 +67,7 @@ else
 fi
 
 inidir=/opt/opensim/config/${tgt}
-cmd="/usr/bin/mono ${exe}.exe -inidirectory=${inidir} -logconfig=${inidir}/${exe}.exe.config $NeedARest"
+cmd="/usr/bin/mono ${bindir}/${exe}.exe -inidirectory=${inidir} -logconfig=${inidir}/${exe}.exe.config $NeedARest"
 title=$(head -n 1 ${inidir}/Regions/sim.ini )
 
 # Check if it's already running.
