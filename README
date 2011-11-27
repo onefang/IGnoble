@@ -1,6 +1,7 @@
 Use this to create a sim that links into Infinite Grid from Linux.
 
-It's only been tested on Ubuntu 10.04, YMMV.
+It's only been tested on Ubuntu 10.04, YMMV.  This is also a WIP, use it
+at your own risk.
 
 Follow these steps.
 
@@ -12,9 +13,8 @@ and follow the directions to create an admin user account.  You can skip
 that bit if you already have a suitable user with sudo access.
 
 Note that these scripts pretty much follow that above wiki description,
-with some exceptions.  REST is used for console access, instead of
-screen.  The configuration information per sim has been rearranged so
-that there is only ONE copy of the OpenSim installation.
+with some exceptions.  The configuration information per sim has been
+rearranged so that there is only ONE copy of the OpenSim installation.
 
 Next you need to figure out what password you want to use for OpenSims
 access to the database.  We will call this "DatabasePassword".  Run the
@@ -22,7 +22,7 @@ following script -
 
 ./install_opensim.sh DatabasePassword
 
-This will do most of the work fo you, except for creating sims.  A
+This will do most of the work for you, except for creating sims.  A
 separate script is here for sim creation, you can use it to create many
 sims.  You will need -
 
@@ -35,30 +35,28 @@ A location for your sim, we will use "1234,5678".  You can use the
 Infinite Grid web based map to poke around and find a good location. 
 Choose an empty spot.
 
-Optionally, you might need your IP address if you are creating more than
-one sim, we will use "1.2.3.4".
-
-Once you have all that information sorted out, run this script if ONLY
-hosting a single sim on this computer -
+Once you have all that information sorted out, run this script -
 
 ./create_sim.sh "My new sim" "1234,5678" "sims.example.net"
 
-Or this if you plan on running more than one sim -
+Or this if you want to override the detected IP address -
 
 ./create_sim.sh "My new sim" "1234,5678" "sims.example.net" "1.2.3.4"
 
 Now you can go to /opt/opensim/config/sim01 and run the following script
 to start it up -
 
-./start-sim-in-rest
+./start-sim
 
-You will see the REST console.  You can run the REST console again by
+You will see the screen console.  You can run the screen console again by
 running that command once more.
 
 Once it's all tested, you can use this to finish things off (back in
 this directory) -
 
 ./go_live.sh
+
+That last command has never been tested.  lol
 
 
 NOTES -
@@ -68,6 +66,6 @@ are running one instance of OS for each sim though, as this prevents one
 sim crashing from bringing down the others.  OS however really wants to
 write data to directories within it's own bin directory.  I'm not at all
 certian if that data can be shared.  For the same reason, so far I've
-not been able to get to thepoint where we can make the OS directory read
-only.  This complicates things during upgrades.
+not been able to get to the point where we can make the OS directory
+read only.  This complicates things during upgrades.
 
