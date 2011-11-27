@@ -49,14 +49,22 @@ to start it up -
 ./start-sim
 
 You will see the screen console.  You can run the screen console again by
-running that command once more.
+running that command once more, or running the sim-console command.
+
+You can stop the sim with -
+
+./stop-sim
+
+You can backup the sim with -
+
+./backup-sim
+
+Though they all get backed up every six hours anyway.
 
 Once it's all tested, you can use this to finish things off (back in
-this directory) -
+this setup directory) -
 
 ./go_live.sh
-
-That last command has never been tested.  lol
 
 
 NOTES -
