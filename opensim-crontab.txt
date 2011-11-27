@@ -9,3 +9,6 @@
 # experimental version using savelog -c cycles all opensim log files over 7 days
 0 0 * * *       /usr/bin/savelog -c 7 /var/log/opensim/*.log
 
+# Backup the sims every 6 hours.
+0 */6 * * *       /opt/opensim/setup/backup-sims.sh
+

@@ -65,6 +65,9 @@ ExternalHostName = $URL
 zzzzEOFzzzz
 
 ln -s ../../setup/start-sim start-sim
+ln -s ../../setup/backup-sim start-sim
+ln -s ../../setup/sim-console start-sim
+ln -s ../../setup/stop-sim start-sim
 cp ../../current/bin/OpenSim.exe.config OpenSim.exe.config
 sed -i 's@<appender name="LogFileAppender" type="log4net.Appender.FileAppender">@<appender name="LogFileAppender" type="log4net.Appender.RollingFileAppender">@' OpenSim.exe.config
 sed -i "s@<file value=\"OpenSim.log\" />@<file value=\"/var/log/opensim/sim$NUM.log\" />@" OpenSim.exe.config

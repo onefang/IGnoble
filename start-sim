@@ -1,12 +1,5 @@
 #!/bin/bash
 
-# Pick one of these depending on how you want your access.
-# NOTE - REST does not work.  B-(
-#NeedARest=" -console=rest"
-NeedARest=""
-Screaming="true"
-#Screaming=""
-
 USER=$(whoami)
 console_name="OpenSim_console"
 screen_session=opensim/${console_name}
@@ -32,7 +25,7 @@ fi
 
 if [ "x$tgt" = "x" ]; then
     echo "usage:"
-    echo "    $ start-sim-in-rest <sim>"
+    echo "    $ $(basename $0) <sim>"
     echo "where <sim> is one of: " robust sim[0-9][0-9]
     exit 1
 fi
@@ -49,15 +42,10 @@ export MONO_PATH=${bindir}
 # Then we would not have to do this, and subsequently write all over the damn bin directory.
 cd ${bindir}
 
-if [ "x$Screaming" = "xtrue" ]
-then
-    if ($screen_check | grep -q ${console_name}); then
-	echo "INFO: Screen already running"
-	true
-    else
-	echo "DEBUG: Starting screen"
-	$SUDO screen -d -m -S ${console_name}
-   fi
+if ($screen_check | grep -q ${console_name}); then
+    true
+else
+    $SUDO screen -d -m -S ${console_name}
 fi
 
 if [ "x$tgt" = "xrobust" ]; then
@@ -67,33 +55,42 @@ else
 fi
 
 inidir=/opt/opensim/config/${tgt}
-cmd="/usr/bin/mono ${bindir}/${exe}.exe -inidirectory=${inidir} -logconfig=${inidir}/${exe}.exe.config $NeedARest"
+# Grab the first line of the sim.ini file, it should be the sim name in square brackets.
 title=$(head -n 1 ${inidir}/Regions/sim.ini )
+# Strip off spaces at either end.
+shopt -s extglob
+title=${title##*( )}
+title=${title%%*( )}
+shopt -u extglob
+# Strip off the square brackets at either end.
+title=${title:1:$(( ${#title} - 2 ))}
 
-# Check if it's already running.
-if [ ! -e /var/run/opensim/${tgt}.pid ]
-then
-    if [ "x$Screaming" = "xtrue" ]
-    then
-	echo "INFO: start process and connect to screen (opensim) $title"
-	$SUDO screen -r ${screen_session} -p "-" -X screen -t "${title}" ${cmd}
-    else
-	$cmd
-    fi
-fi
+case $(basename $0) in 
+    "start-sim")
+	cmd="/usr/bin/mono ${bindir}/${exe}.exe -inidirectory=${inidir} -logconfig=${inidir}/${exe}.exe.config"
 
-if [ "x$quiet" = "x" ]
-then
-    # Either way, need to start up the console after.
-    if [ "x$Screaming" = "xtrue" ]
-    then
-	echo "Starting screen client."
-	screen -r ${screen_session} -A
-    elif [ "x$NeedARest" != "x" ]
-    then
-	echo "Starting rest client."
-	cd ${inidir}
-	/usr/bin/mono ${bindir}/OpenSim.ConsoleClient.exe -logconfig=${inidir}/${exe}.exe.config
-    fi
-fi
+	# Check if it's already running.
+	if [ ! -e /var/run/opensim/${tgt}.pid ]
+	then
+	    $SUDO screen -r ${screen_session} -p "-" -X screen -t "[${title}]" ${cmd}
+	fi
+	;&
+
+    "sim-console")
+	if [ "x$quiet" = "x" ]
+	then
+	    screen -r ${screen_session} -p "[${title}]" -A
+	fi
+	;;
+
+    "backup-sim")
+	# Substitute underscores for spaces in the title, then add the full date and time to create the OAR file name.
+	cmd="save oar ${inidir}/../../backups/${title// /_}-$(date '+%F_%T').oar"
+	sudo -Hu opensim screen -r opensim/OpenSim_console -p "[${title}]" -X stuff "${cmd}$(/bin/echo -ne '\015')"
+	;;
+
+    "stop-sim")
+	sudo -Hu opensim screen -r opensim/OpenSim_console -p "[${title}]" -X stuff "shutdown$(/bin/echo -ne '\015')"
+	;;
+esac
 
