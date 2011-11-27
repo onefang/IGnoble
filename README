@@ -66,6 +66,11 @@ this setup directory) -
 
 ./go_live.sh
 
+Which sets up the monit control file/s, though you should double check
+it all, and you still have to do the basic configuration and enabling of
+monit yourself.  This is in case you already have monit set the way you
+like.
+
 
 NOTES -
 
