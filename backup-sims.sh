@@ -11,6 +11,6 @@ do
 	./backup-sim
 	# sleep for three minutes, so that there is plenty of time to do the backup, 
 	# and we are not keeping the computer very busy if there are lots of sims.
-	sleep(180)
+	sleep 180
     fi
 done
