@@ -86,11 +86,11 @@ case $(basename $0) in
     "backup-sim")
 	# Substitute underscores for spaces in the title, then add the full date and time to create the OAR file name.
 	cmd="save oar ${inidir}/../../backups/${title// /_}-$(date '+%F_%T').oar"
-	sudo -Hu opensim screen -r opensim/OpenSim_console -p "[${title}]" -X stuff "${cmd}$(/bin/echo -ne '\015')"
+	$SUDO screen -r opensim/OpenSim_console -p "[${title}]" -X stuff "${cmd}$(/bin/echo -ne '\015')"
 	;;
 
     "stop-sim")
-	sudo -Hu opensim screen -r opensim/OpenSim_console -p "[${title}]" -X stuff "shutdown$(/bin/echo -ne '\015')"
+	$SUDO screen -r opensim/OpenSim_console -p "[${title}]" -X stuff "shutdown$(/bin/echo -ne '\015')"
 	;;
 esac
 
