@@ -30,19 +30,19 @@ then
     echo "WARNING setting the Location to $LOCATION, this may not be what you want."
 fi
 
-# Here we make use of an external IP finding service.  Careful, it may move.
-# We later reuse the same IP for the default URL, coz that should work at least.
 if [ "x$IP" = "x" ]
 then
 				# 0.0.0.0 will work for a single sim per physical machine, otherwise we need the real internal IP.
-    IP=$(wget -q http://automation.whatismyip.com/n09230945.asp -O -)
+    IP="0.0.0.0"
     echo "WARNING setting the InternalAddress to $IP, this may not be what you want."
-    echo "  0.0.0.0 will work for a single sim per physical machine, otherwise we need the real internal IP."
+#    echo "  0.0.0.0 will work for a single sim per physical machine, otherwise we need the real internal IP."
+# According to the OpenSim docs, 0.0.0.0 means to listen on all NICs the machine has, which should work fine.
 fi
 
+# Here we make use of an external IP finding service.  Careful, it may move.
 if [ "x$URL" = "x" ]
 then
-    URL=$IP			# URL is best (without the HTTP://), but IP (e.g. 88.109.81.55) works too.
+    URL=$(wget -q http://automation.whatismyip.com/n09230945.asp -O -)	# URL is best (without the HTTP://), but IP (e.g. 88.109.81.55) works too.
     echo "WARNING setting the ExternalHostName to $URL, this may not be what you want."
 fi
 
