@@ -2,8 +2,9 @@
 
 USER=$(whoami)
 console_name="OpenSim_console"
-screen_session=opensim/${console_name}
-screen_check="screen -ls opensim/"
+screen_command="tmux -S /var/run/opensim/opensim-tmux.socket"
+screen_session=${console_name}
+screen_window="${screen_command} select-window -t ${screen_session}"
 osversion="current"
 bindir=/opt/opensim/${osversion}/bin
 quiet=""
@@ -30,67 +31,70 @@ if [ "x$tgt" = "x" ]; then
     exit 1
 fi
 
-if [ $USER = "opensim" ]
-then
-    SUDO=""
-else
-    SUDO="sudo -Hu opensim"
-fi
-
 # Would be nice if this worked.
 export MONO_PATH=${bindir}
 # Then we would not have to do this, and subsequently write all over the damn bin directory.
 cd ${bindir}
 
-if ($screen_check | grep -q ${console_name}); then
+if ( ${screen_command} -q list-sessions 2>/dev/null | grep -q ${console_name}: ); then
     true
 else
-    $SUDO screen -d -m -S ${console_name}
-fi
-
-if [ "x$tgt" = "xrobust" ]; then
-    exe="Robust"
-else
-    exe="OpenSim"
+    if [ $USER = "opensim" ]
+    then
+	SUDO=""
+    else
+	SUDO="sudo -Hu opensim"
+    fi
+    # The sudo is only so that the session is owned by opensim, otherwise it's owned by whoewer ran this script, which is a likely security hole.
+    # After the session is created, we rely on the /var/run/opensim directory to be group sticky, so that anyone in the opensim group can attach to the tmux socket.
+    $SUDO ${screen_command} new-session -d -s ${console_name}
 fi
 
 inidir=/opt/opensim/config/${tgt}
-# Grab the first line of the sim.ini file, it should be the sim name in square brackets.
-title=$(head -n 1 ${inidir}/Regions/sim.ini )
-# Strip off spaces at either end.
-shopt -s extglob
-title=${title##*( )}
-title=${title%%*( )}
-shopt -u extglob
-# Strip off the square brackets at either end.
-title=${title:1:$(( ${#title} - 2 ))}
+
+if [ "x$tgt" = "xrobust" ]; then
+    exe="Robust"
+    title="ROBUST"
+    roboini="-inifile=${inidir}/Robust.ini"
+else
+    exe="OpenSim"
+    # Grab the first line of the sim.ini file, it should be the sim name in square brackets.
+    title=$(head -n 1 ${inidir}/Regions/sim.ini )
+    # Strip off spaces at either end.
+    shopt -s extglob
+    title=${title##*( )}
+    title=${title%%*( )}
+    shopt -u extglob
+    # Strip off the square brackets at either end.
+    title=${title:1:$(( ${#title} - 2 ))}
+fi
 
 case $(basename $0) in 
     "start-sim")
-	cmd="/usr/bin/mono ${bindir}/${exe}.exe -inidirectory=${inidir} -logconfig=${inidir}/${exe}.exe.config"
+	cmd="/usr/bin/mono ${bindir}/${exe}.exe -inidirectory=${inidir} -logconfig=${inidir}/${exe}.exe.config ${roboini}"
 
 	# Check if it's already running.
 	if [ ! -e /var/run/opensim/${tgt}.pid ]
 	then
-	    $SUDO screen -r ${screen_session} -p "-" -X screen -t "[${title}]" ${cmd}
+	    ${screen_command} new-window -dn "[${title}]" -t "${screen_session}" "${cmd}"
 	fi
 	;&
 
     "sim-console")
 	if [ "x$quiet" = "x" ]
 	then
-	    screen -r ${screen_session} -p "[${title}]" -A
+	    ${screen_window}:"[${title}]" \; attach-session -t "${screen_session}"
 	fi
 	;;
 
     "backup-sim")
 	# Substitute underscores for spaces in the title, then add the full date and time to create the OAR file name.
 	cmd="save oar ${inidir}/../../backups/${title// /_}-$(date '+%F_%T').oar"
-	$SUDO screen -r opensim/OpenSim_console -p "[${title}]" -X stuff "${cmd}$(/bin/echo -ne '\015')"
+	${screen_window}:"[${title}]" \; send-keys "${cmd}" Enter
 	;;
 
     "stop-sim")
-	$SUDO screen -r opensim/OpenSim_console -p "[${title}]" -X stuff "shutdown$(/bin/echo -ne '\015')"
+	${screen_window}:"[${title}]" \; send-keys "shutdown" Enter
 	;;
 esac
 

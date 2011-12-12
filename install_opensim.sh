@@ -13,7 +13,7 @@ OSPATH="/opt/opensim"
 USER=$(whoami)
 VERSION_CONTROL="off"
 
-sudo apt-get install mysql-server screen mono-complete monit mc
+sudo apt-get install mysql-server tmux screen mono-complete monit mc
 sudo /etc/init.d/mysql restart
 
 echo "Setting up mySQL"
@@ -34,12 +34,15 @@ sudo chown $USER /home/opensim/.screenrc
 echo -e "acladd root,$USER\n" >> /home/opensim/.screenrc
 sudo chown opensim:opensim /home/opensim/.screenrc
 sudo chmod 644 /home/opensim/.screenrc
+sudo cp opensim.tmux.conf /home/opensim/.tmux.conf
+sudo chown $USER /home/opensim/.tmux.conf
+sudo chmod 644 /home/opensim/.tmux.conf
 sudo mkdir -p /var/log/opensim
 sudo chown opensim:opensim /var/log/opensim
 sudo chmod 757 /var/log/opensim
 sudo mkdir -p /var/run/opensim
 sudo chown opensim:opensim /var/run/opensim
-sudo chmod 757 /var/run/opensim
+sudo chmod 42770 /var/run/opensim
 sudo mkdir -p $OSPATH/backups $OSPATH/caches/assetcache $OSPATH/config $OSPATH/setup 
 sudo chown opensim:opensim $OSPATH
 sudo chown -R opensim:opensim $OSPATH
@@ -111,7 +114,7 @@ sed -i 's@CacheDirectory = ./assetcache@CacheDirectory = caches/assetcache@' Flo
 cd ../../..
 
 # Setting screen to be suid.  EWWWWWW!!!  Security hole!!
-#ImReallyParanoid="true"
+ImReallyParanoid="true"
 if [ "x$ImReallyParanoid" = "x" ]
 then
     sudo chmod u+s /usr/bin/screen
