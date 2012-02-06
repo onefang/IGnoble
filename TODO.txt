@@ -1,3 +1,9 @@
+FIX BUGS -
+
+Hmmmm, monit has trouble restarting the sim after a reboot, and seems unreliable sometimes.
+
+
+NEW FEATURES -
 
 In [Startup] there is this -
     ; To run a script every few minutes, set the script filename here
