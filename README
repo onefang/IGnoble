@@ -28,7 +28,7 @@ is a final step that needs to be done manually for now.  Edit
 /etc/rc.local, make sure it has the following line in it somewhere,
 probably at the end -
 
-/opt/setup/fix_var_run.sh
+/opt/opensim/setup/fix_var_run.sh
 
 
 Creating sims.
