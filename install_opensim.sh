@@ -39,12 +39,12 @@ sudo chown $USER /home/opensim/.tmux.conf
 sudo chmod 644 /home/opensim/.tmux.conf
 sudo mkdir -p /var/log/opensim
 sudo chown opensim:opensim /var/log/opensim
-sudo chmod 757 /var/log/opensim
+sudo chmod 775 /var/log/opensim
 sudo ./fix_var_run.sh
 sudo mkdir -p $OSPATH/backups $OSPATH/caches/assetcache $OSPATH/config $OSPATH/setup 
 sudo chown opensim:opensim $OSPATH
 sudo chown -R opensim:opensim $OSPATH
-sudo chmod -R 757 $OSPATH
+sudo chmod -R 775 $OSPATH
 cp * $OSPATH/setup
 cp common.ini $OSPATH/config
 sed -i "s@MYSQL_PASSWORD@$MYSQL_PASSWORD@g" $OSPATH/config/common.ini
