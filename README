@@ -4,6 +4,7 @@ It's only been tested on Ubuntu 10.04, YMMV.  This is also a WIP, use it
 at your own risk.
 
 Follow these steps.
+-------------------
 
 Go to -
 
@@ -22,8 +23,18 @@ following script -
 
 ./install_opensim.sh DatabasePassword
 
-This will do most of the work for you, except for creating sims.  A
-separate script is here for sim creation, you can use it to create many
+This will do most of the work for you, except for creating sims.  There
+is a final step that needs to be done manually for now.  Edit
+/etc/rc.local, make sure it has the following line in it somewhere,
+probably at the end -
+
+/opt/setup/fix_var_run.sh
+
+
+Creating sims.
+--------------
+
+A separate script is here for sim creation, you can use it to create many
 sims.  You will need -
 
 Your host name, or it could be your IP, we will use "sims.example.net".
@@ -43,6 +54,10 @@ Or this if you want to override the detected IP address -
 
 ./create_sim.sh "My new sim" "1234,5678" "sims.example.net" "1.2.3.4"
 
+
+Running sims.
+-------------
+
 Now you can go to /opt/opensim/config/sim01 and run the following script
 to start it up -
 
@@ -60,6 +75,10 @@ You can backup the sim with -
 ./backup-sim
 
 Though they all get backed up every six hours anyway.
+
+
+Finishing up.
+-------------
 
 Once it's all tested, you can use this to finish things off (back in
 this setup directory) -
