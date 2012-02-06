@@ -13,7 +13,7 @@ OSPATH="/opt/opensim"
 USER=$(whoami)
 VERSION_CONTROL="off"
 
-sudo apt-get install mysql-server tmux screen mono-complete monit mc
+sudo apt-get install mysql-server tmux screen mono-complete uuid-runtime monit mc
 sudo /etc/init.d/mysql restart
 
 echo "Setting up mySQL"
