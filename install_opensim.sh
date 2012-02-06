@@ -40,9 +40,7 @@ sudo chmod 644 /home/opensim/.tmux.conf
 sudo mkdir -p /var/log/opensim
 sudo chown opensim:opensim /var/log/opensim
 sudo chmod 757 /var/log/opensim
-sudo mkdir -p /var/run/opensim
-sudo chown opensim:opensim /var/run/opensim
-sudo chmod 42770 /var/run/opensim
+sudo ./fix_var_run.sh
 sudo mkdir -p $OSPATH/backups $OSPATH/caches/assetcache $OSPATH/config $OSPATH/setup 
 sudo chown opensim:opensim $OSPATH
 sudo chown -R opensim:opensim $OSPATH
