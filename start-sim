@@ -78,7 +78,7 @@ case $(basename $0) in
 	if [ -e /var/run/opensim/${tgt}.pid ]
 	then
 	    # Double check if it's REALLY running.
-	    if [ "x$(ps -p $(cat /var/run/opensim/sim90.pid) --no-headers -o comm)" = "x" ]; then
+	    if [ "x$(ps -p $(cat /var/run/opensim/${tgt}.pid) --no-headers -o comm)" = "x" ]; then
 		$SUDO rm -f /var/run/opensim/${tgt}.pid
 	    fi
 	fi
