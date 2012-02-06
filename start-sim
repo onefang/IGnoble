@@ -75,13 +75,17 @@ case $(basename $0) in
 	cmd="/usr/bin/mono ${bindir}/${exe}.exe -inidirectory=${inidir} -logconfig=${inidir}/${exe}.exe.config ${roboini}"
 
 	# Check if it's already running.
-	if [ ! -e /var/run/opensim/${tgt}.pid ]
+	if [ -e /var/run/opensim/${tgt}.pid ]
 	then
 	    # Double check if it's REALLY running.
 	    if [ "x$(ps -p $(cat /var/run/opensim/sim90.pid) --no-headers -o comm)" = "x" ]; then
 		$SUDO rm -f /var/run/opensim/${tgt}.pid
-		${screen_command} new-window -dn "[${title}]" -t "${screen_session}" "${cmd}"
 	    fi
+	fi
+	# Now see if it's running.  lol
+	if [ ! -e /var/run/opensim/${tgt}.pid ]
+	then
+		${screen_command} new-window -dn "[${title}]" -t "${screen_session}" "${cmd}"
 	fi
 	;&
 
