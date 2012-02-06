@@ -9,6 +9,13 @@ osversion="current"
 bindir=/opt/opensim/${osversion}/bin
 quiet=""
 
+if [ $USER = "opensim" ]
+then
+    SUDO=""
+else
+    SUDO="sudo -Hu opensim"
+fi
+
 if [ "$1" = "-q" ]
 then
     quiet="true"
@@ -39,12 +46,6 @@ cd ${bindir}
 if ( ${screen_command} -q list-sessions 2>/dev/null | grep -q ${console_name}: ); then
     true
 else
-    if [ $USER = "opensim" ]
-    then
-	SUDO=""
-    else
-	SUDO="sudo -Hu opensim"
-    fi
     # The sudo is only so that the session is owned by opensim, otherwise it's owned by whoewer ran this script, which is a likely security hole.
     # After the session is created, we rely on the /var/run/opensim directory to be group sticky, so that anyone in the opensim group can attach to the tmux socket.
     $SUDO ${screen_command} new-session -d -s ${console_name}
@@ -76,7 +77,11 @@ case $(basename $0) in
 	# Check if it's already running.
 	if [ ! -e /var/run/opensim/${tgt}.pid ]
 	then
-	    ${screen_command} new-window -dn "[${title}]" -t "${screen_session}" "${cmd}"
+	    # Double check if it's REALLY running.
+	    if [ "x$(ps -p $(cat /var/run/opensim/sim90.pid) --no-headers -o comm)" = "x" ]; then
+		$SUDO rm -f /var/run/opensim/${tgt}.pid
+		${screen_command} new-window -dn "[${title}]" -t "${screen_session}" "${cmd}"
+	    fi
 	fi
 	;&
 
