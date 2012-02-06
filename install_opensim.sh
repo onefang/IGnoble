@@ -125,6 +125,7 @@ sudo chown -R opensim:opensim $OSPATH
 sudo chmod -R a-x $OSPATH
 sudo chmod -R a+X $OSPATH
 sudo chmod -R g+w $OSPATH
-sudo chmod -R a-x $OSPATH *.sh
+sudo chmod -R a+x $OSPATH/*.sh
 sudo chmod a+x $OSPATH/setup/start-sim
+sudo chmod a+x $OSPATH/setup/start-sim-screen
 
