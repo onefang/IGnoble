@@ -1,10 +1,6 @@
 FIX BUGS -
 
-Hmmmm, monit has trouble restarting the sim after a reboot, and seems
-unreliable sometimes.  Scan through monits conf.d directory, look at the
-sim links, follow those to the sims config directory, then run start-sim
-from there. Then stick that code at the end of fix_var_run.sh, since
-it's running from rc.local anyway.
+Zarro boogs!
 
 
 NEW FEATURES -
