@@ -1,7 +1,8 @@
 Use this to create a sim that links into Infinite Grid from Linux.
 
-It's only been tested on Ubuntu 10.04, YMMV.  This is also a WIP, use it
-at your own risk.
+It's only been tested on Ubuntu 10.04 and 11.04, YMMV.  This is also a
+WIP, use it at your own risk.  It's been used to set up two freshly
+installed Ubuntu servers though.
 
 Follow these steps.
 -------------------
