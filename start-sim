@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Number of days to keep backup OAR files.
+DAYS="15"
+
 USER=$(whoami)
 console_name="OpenSim_console"
 screen_command="tmux -S /var/run/opensim/opensim-tmux.socket"
@@ -97,6 +100,8 @@ case $(basename $0) in
 	;;
 
     "backup-sim")
+	# First delete old backups.  Using mtime instead of ctime, so that people can touch files the want to keep, and coz ctime seems to have a bug.
+	find "${inidir}/../../backups/" -name "${title// /_}-*.oar" -mtime +${DAYS} -type f -print0 | xargs -0 /bin/rm -f
 	# Substitute underscores for spaces in the title, then add the full date and time to create the OAR file name.
 	cmd="save oar ${inidir}/../../backups/${title// /_}-$(date '+%F_%T').oar"
 	${screen_window}:"[${title}]" \; send-keys "${cmd}" Enter
