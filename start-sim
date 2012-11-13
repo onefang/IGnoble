@@ -46,7 +46,7 @@ cd ${bindir}
 if ( ${screen_command} -q list-sessions 2>/dev/null | grep -q ${console_name}: ); then
     true
 else
-    # The sudo is only so that the session is owned by opensim, otherwise it's owned by whoewer ran this script, which is a likely security hole.
+    # The sudo is only so that the session is owned by opensim, otherwise it's owned by whoever ran this script, which is a likely security hole.
     # After the session is created, we rely on the /var/run/opensim directory to be group sticky, so that anyone in the opensim group can attach to the tmux socket.
     $SUDO ${screen_command} new-session -d -s ${console_name}
 fi
