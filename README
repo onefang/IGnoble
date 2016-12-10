@@ -1,3 +1,11 @@
+
+NOTE -
+
+These scripts have now been folded into the main OpenSim-IG repo, so
+there wil be no more changes here.
+
+
+
 Use this to create a sim that links into Infinite Grid from Linux.
 
 It's only been tested on Ubuntu 10.04 and 11.04, YMMV.  This is also a
